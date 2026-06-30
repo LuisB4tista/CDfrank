@@ -1,0 +1,21 @@
+module Decoder_Letras (
+  input  [2:0] chaves,
+  output reg [6:0] display
+);
+
+always @(*) begin
+    case (chaves)
+        3'b000: display = 7'b0001000; // A
+        3'b001: display = 7'b1100000; // b
+        3'b010: display = 7'b0110001; // C
+        3'b011: display = 7'b1000010; // d
+        3'b100: display = 7'b0110000; // E
+        3'b101: display = 7'b0111000; // F
+        3'b110: display = 7'b0100001; // G
+        3'b111: display = 7'b1001000; // H
+        default: display = 7'b1111111; // apagado
+      
+    endcase
+end
+
+endmodule

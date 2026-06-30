@@ -1,0 +1,77 @@
+module Pontos(
+	input clk,rst,
+	input enable,
+	input [1:0]tipo_navio,
+	input erro_ou_acerto,
+	output reg [5:0]count_total,
+	output reg game_over
+	);
+	
+	
+	//Tipos de Navio
+	//00 Porta
+	//01 Fraga
+	//10 Corv
+	//11 Sub
+	reg [2:0] count_porta_aviões
+	reg [2:0] count_fragata
+	reg [2:0] count_corverta
+	reg [2:0] count_sub
+	
+
+	
+	always@(posedge clk or negedge rst)
+			if (reset) begin//Zera todos os contadores
+            count_total <= 6'b000000;//0 ou quantidade inicial de jogadas, 5 talvez?
+				count_porta_aviões <= 3'b000;
+				count_fragata <= 3'b000;
+				count_corverta <= 3'b000;
+				count_sub <= 3'b000;
+			end 
+			else if(erro_ou_acerto==0 && enable==1)begin//Subtração
+				if(count_total == 0)begin
+					game_over <= 1;
+				end 
+				else begin
+					 count_total <= count_total - 1; 
+				end
+			end 
+			else if(erro_ou_acerto ==1 && enable==1)begin//Soma
+				count_total <= count_total + 1;//Independete do navio conta 1 por conta do acerto
+				case(tipo_navio)
+						case 00:
+							count_porta_aviões <= count_porta_aviões + 1;
+							
+						end
+						case 01:
+							count_fragata <= count_fragata + 1;
+
+						end
+						case 10:
+							count_corverta <= count_corverta + 1;
+
+						end
+						case 11:
+						count_sub <= count_sub + 1;
+					end
+			endcase
+				if(count_porta_aviões == 5)begin
+					count_total <= count_total + 8; 
+				end
+				else if(count_fragata == 4)begin
+					count_total <= count_total + 6; 
+				end
+				else if(count_corverta == 3)begin
+					count_total <= count_total + 4; 
+				end
+				else if(count_sub == 2)begin
+					count_total <= count_total + 10; 
+				end
+			end
+			else if(count_porta_aviões == 5 && count_fragata == 4 && count_corverta == 3 && count_sub == 2)begin
+				game_over <=1b'1;
+			end
+			
+			
+			
+endmodule

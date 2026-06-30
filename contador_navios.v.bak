@@ -1,0 +1,14 @@
+module contador_navios (
+    input incremento,
+    input reset,
+    output reg [2:0] contagem
+);
+
+always @(posedge incremento or posedge reset) begin
+    if (reset)
+        contagem <= 3'b000;
+    else
+        contagem <= contagem + 1'b1;
+end
+
+endmodule

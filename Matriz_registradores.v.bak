@@ -1,0 +1,27 @@
+module Matriz_registradores(
+  input [3:0]dado_in,
+  input clk,rst,
+  input [2:0]endereco_coluna,
+  input [2:0]endereco_linha,
+  input escrita,
+  output [3:0]dado_out
+);
+  // Declaração da memória: 64 posições (8x8) de 4 bits cada
+  reg [3:0] matriz [0:63];
+  
+  // Concatenação da linha e coluna para formar um endereço único de 6 bits
+  wire [5:0] endereco_completo = {endereco_coluna, endereco_linha};
+
+  always@(posedge clk) begin
+//Escreve quando variável de escrita for alto
+    if(escrita)
+      matriz[endereco_completo]<= dado_in;
+    end
+  end
+//Lê quando variável de escrita for baixo
+    //Operação de Leitura
+    assign dado_out = matriz[endereco_completo];
+
+endmodule
+
+  

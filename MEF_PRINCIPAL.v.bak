@@ -1,0 +1,118 @@
+module MEF_PRINCIPAL(
+	input [2:0] coluna,
+	input [2:0] linha,
+	input [4:0] dado,
+	input [1:0] modo_operaçao,
+	input clk,rst,
+	input push_buttom,
+	//Outputs Codigo de Marcelo
+	output [3:0] r, g, b,   
+	output hs, vs);
+	
+//----------------------------------------
+//Definiçao dos estados
+ //1º- Definição dos estados
+	reg [1:0] estado_atual;
+	reg [1:0] proximo_estado;
+	localparam INICIO = 2'b00;
+	localparam JOGADA_DE_DEFESA = 2'b01;
+	localparam JOGADA_DE_ATAQUE = 2'b10;
+	localparam FIM = 2'b11;
+//----------------------------------------	
+	wire [3:0] dado_leitura;
+	wire [1:0] tipo_navio;
+	wire complete;
+	wire escrita;
+	reg [4:0] dado_escrita 
+		
+	   MEF_posicionamento jogada_de_defesa(               
+				.count_sig(push_buttom),
+				.clk(clk),
+				.reset(reset),
+				.tipo_navio(tipo_navio),
+				.complete(complete)
+				);
+
+		Matriz_registradores leitura_escrita(
+				 .dado_in(dado_escrita),
+				 .clk(clk),
+				 .rst(rst),
+				 .endereco_coluna(coluna),
+				 .endereco_linha(linha),
+				 .escrita(escrita),
+				 .dado_out(dado_leitura)
+			 );
+		
+	
+	//--------------------------------------------------
+	//2ºBloco Sequêncial
+	always @(posedge clk_vga or negedge rst) begin	
+     // Reset assíncrono  
+		if (!rst) begin
+			estado_atual <= INICIO;
+       end
+		else begin 
+			estado_atual <= proximo_estado;
+		end
+	end
+		
+	always@(*)begin
+		// ----------------------------------------------
+		// Estado 00 (Idle)
+		// Inicia o jogo quando:
+		// mode[0] = 1
+		// ----------------------------------------------
+		dado_escrita = 1'b0;
+		escrita = 1'b0;
+		case(estado_atual)
+			INICIO:begin
+				//LIMPA TUDO E COLOCA EM AZUL
+				//PROXIMO ESTADO
+			end
+			
+			JOGADA_DE_DEFESA:begin
+		// ----------------------------------------------
+		// Le a matriz para verificar sobreposiçao
+		// Escreve todas as casas na matriz
+		// PROXIMO ESTADO
+		// ----------------------------------------------
+				if (push_buttom && complete!=0) begin
+				  //Verificar sobreposição da coordenada de leitura:
+					if(dado_leitura>5'b11011)begin//Casa no intervalo branco, não escreve
+							estado<= JOGADA_DE_DEFESA;
+							end
+					  
+					else if(dado_leitura>5'b10011 && dado_leitura<5'b11000)begin//No intervalo azul
+							escrita = 1'b1;
+							dado_escrita = {1'b1,2'b11,tipo_navio};//Condição da casas//Cor//Tipo do Navio
+				  end
+				else
+					proximo_estado = JOGADA_DE_ATAQUE;
+        end
+		  
+		  JOGADA_DE_ATAQUE:begin
+			  //PRIMEIRO PINTAR O TABULEIRO DE AZUL
+			 if(push_buttom && !game_over) begin
+				//Verificação de leitura
+				 if(dado_leitura<5'b10100 || dado_leitura>5'b10111)begin//Fora do intervalo de jogada de azul
+					 proximo_estado = JOGADA_DE_ATAQUE;
+				 end
+				 else if(dado_leitura>5'b10011 && dado_leitura<5'b11000)begin
+					 escrita = 1'b1;
+					 if(dado_leitura[5]==1'b0)begin
+						dado_escrita = {1'b0,2'b10,dado_leitura[1:0]}//Condição da casas//Cor//Tipo do Navio
+					 end
+					 dado_escrita = {1'b1,2'b00,dado_leitura[1:0]}//Condição da casas//Cor//Tipo do Navio
+			 end
+				
+		  end
+		  
+		  FIM:begin
+		  
+		  end
+		  
+		  default:
+				proximo_estado=INICIO;
+		
+		endcase
+	end

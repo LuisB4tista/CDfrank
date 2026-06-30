@@ -1,0 +1,43 @@
+// Linha de comentário indicando o propósito do arquivo.
+// modulo criado p/ demonstrar funcionamento.
+
+// Declaração do módulo "vga_test" e suas portas de entrada (input) e saída (output).
+module vga_test(
+    input [5:0] addr,       // Entrada de 6 bits para endereço de memória manual.
+    input [1:0] color, mode,// Duas entradas de 2 bits: uma para cor manual e outra para o modo de operação.
+    output [3:0] r, g, b,   // Saídas de 4 bits para os canais de cor Vermelho (R), Verde (G) e Azul (B).
+    output hs, vs,          // Saídas de 1 bit para sincronismo horizontal (HSync) e vertical (VSync) do VGA.
+    input rst, en, clk      // Entradas de 1 bit: Reset (rst), Enable/Habilitação (en) e Clock principal (clk).
+);
+
+	reg clk_vga;            // Registrador para armazenar o sinal de clock interno do VGA (frequência dividida).
+	reg [5:0] count;        // Registrador de 6 bits usado como contador interno da máquina de estados.
+	reg [1:0] state;        // Registrador de 2 bits para armazenar o estado atual da MEF (Máquina de Estados Finitos).
+	reg fsm_en;             // Registrador de 1 bit que serve como sinal de habilitação gerado pela MEF.
+	
+	wire [1:0] t_color;     // Fio (wire) de 2 bits que transportará a cor selecionada (manual ou da MEF).
+	wire [3:0] debug_counter;// Fio de 4 bits que armazenará o padrão de cores gerado para o teste.
+	wire [5:0] t_addr;      // Fio de 6 bits que transportará o endereço selecionado (manual ou da MEF).
+	
+	// Bloco sequencial que dispara a cada borda de subida (posedge) do clock principal.
+	always @(posedge clk) begin
+		clk_vga <= !clk_vga; // Inverte o valor de clk_vga. Isso divide a frequência do clock original por 2.
+	end
+	
+	// Atribuição contínua (combinacional) para gerar o padrão visual de debug.
+	// Se mode[1] for 1, subtrai os bits mais significativos dos menos significativos de count.
+	// Se mode[1] for 0, apenas extrai os bits [4:3] do count.
+	assign debug_counter = mode[1] ? count[1:0] - count[5:3] : count[4:3];
+	
+	// Bloco sequencial da Máquina de Estados (MEF), ativado na subida do clk_vga ou na descida do rst (Reset ativo em baixo).
+	always @(posedge clk_vga or negedge rst) begin
+		// fsm
+		if (!rst) begin          // Se o botão de reset for pressionado (for igual a 0)...
+			state <= 0;          // Força o estado a voltar para zero (2'b00).
+			count <= 0;          // Zera o contador interno.
+			fsm_en <= 0;         // Desativa o sinal de habilitação da FSM.
+		end else 
+			begin 
+			// Condição de transição do Estado 00 (Espera/IDLE) para o Estado 01.
+			// Se o bit de modo 0 estiver ativo, o botão enable externo for zero, e estiver no estado 00...
+			if(mode[0] & !en & state ==

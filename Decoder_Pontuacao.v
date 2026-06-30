@@ -1,0 +1,50 @@
+module Decoder_Pontuacao (
+    input  [5:0] numero,          // Entrada de 6 bits (0 a 63)
+    output reg [6:0] display_dez, // Sinais para o display das Dezenas (a-g)
+    output reg [6:0] display_uni  // Sinais para o display das Unidades (a-g)
+);
+
+    // Variáveis internas para armazenar os dígitos separados
+    reg [3:0] dezena;
+    reg [3:0] unidade;
+
+    // 1. Separação das Dezenas e Unidades
+    always @(*) begin
+        dezena  = numero / 4'd10; // Divisão inteira por 10
+        unidade = numero % 4'd10; // Resto da divisão por 10
+    end
+
+    // 2. Mapeamento da DEZENA para o Display de 7 Segmentos
+    // Ordem dos bits na saída: [6]=a, [5]=b, [4]=c, [3]=d, [2]=e, [1]=f, [0]=g
+    always @(*) begin
+        case (dezena)
+			 4'd0: display_dez = 7'b1000000; //0
+			 4'd1: display_dez = 7'b1111001; //1
+			 4'd2: display_dez = 7'b0100100; //2
+			 4'd3: display_dez = 7'b0110000; //3
+			 4'd4: display_dez = 7'b0011001; //4
+			 4'd5: display_dez = 7'b0010010; //5
+			 4'd6: display_dez = 7'b0000010; //6
+			 4'd7: display_dez = 7'b1111000; //7
+			 default: display_dez = 7'b1111111; //Desligado
+		endcase
+    end
+
+    // 3. Mapeamento da UNIDADE para o Display de 7 Segmentos
+    always @(*) begin
+        case (unidade)
+            4'd0:    display_uni = 7'b1111110;
+            4'd1:    display_uni = 7'b0110000;
+            4'd2:    display_uni = 7'b1101101;
+            4'd3:    display_uni = 7'b1111001;
+            4'd4:    display_uni = 7'b0110011;
+            4'd5:    display_uni = 7'b1011011;
+            4'd6:    display_uni = 7'b1011111;
+            4'd7:    display_uni = 7'b1110000;
+            4'd8:    display_uni = 7'b1111111;
+            4'd9:    display_uni = 7'b1111011;
+            default: display_uni = 7'b0000000;
+        endcase
+    end
+
+endmodule
